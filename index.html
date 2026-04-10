@@ -1,985 +1,1392 @@
 <!DOCTYPE html>
-<html lang="mn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Дээрэлхэлт Мэдээлэх Форм</title>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+Mongolian&display=swap" rel="stylesheet">
+<title>Өөдөс — Data Analyst & Strategist</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --sky: #5BA4CF;
-    --sky-light: #EAF4FB;
-    --sky-mid: #C5E1F5;
-    --teal: #38A89D;
-    --teal-light: #E0F4F3;
-    --warm: #F7C873;
-    --warm-light: #FEF6E4;
-    --rose: #E07B7B;
-    --rose-light: #FDEAEA;
-    --green: #5CB85C;
-    --green-light: #EAF6EA;
-    --purple: #8B72BE;
-    --purple-light: #F0EBF9;
-    --text: #2D3748;
-    --text-soft: #718096;
-    --bg: #F0F7FF;
-    --white: #FFFFFF;
-    --border: #CBD5E0;
-    --radius: 16px;
-    --shadow: 0 4px 24px rgba(91,164,207,0.12);
-  }
+:root {
+  --cream: #f5f0e8;
+  --ink:   #1a1209;
+  --rust:  #c94f2a;
+  --teal:  #1a8c7a;
+  --gold:  #e8a020;
+  --sky:   #3a7fc1;
+  --lilac: #8b5fb8;
+  --mono:  'DM Mono', monospace;
+  --serif: 'Instrument Serif', serif;
+  --display: 'Bebas Neue', sans-serif;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    font-family: 'Nunito', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 0 0 60px;
-  }
+html { scroll-behavior: smooth; }
 
-  /* ── HEADER ── */
-  .hero {
-    background: linear-gradient(135deg, #5BA4CF 0%, #38A89D 100%);
-    padding: 48px 24px 56px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='28' fill='none' stroke='rgba(255,255,255,0.07)' stroke-width='2'/%3E%3C/svg%3E") repeat;
-    pointer-events: none;
-  }
-  .hero-icon {
-    font-size: 64px;
-    margin-bottom: 16px;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
-    animation: float 3s ease-in-out infinite;
-  }
-  @keyframes float {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
-  .hero h1 {
-    font-size: clamp(22px, 5vw, 32px);
-    font-weight: 900;
-    color: #fff;
-    margin-bottom: 8px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  }
-  .hero-sub {
-    font-size: 15px;
-    color: rgba(255,255,255,0.88);
-    font-weight: 600;
-  }
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--mono);
+  overflow-x: hidden;
+  cursor: none;
+}
 
-  /* ── INTRO CARD ── */
-  .intro-card {
-    max-width: 720px;
-    margin: -28px auto 0;
-    background: var(--white);
-    border-radius: 20px;
-    padding: 28px 28px 24px;
-    box-shadow: var(--shadow);
-    border-left: 6px solid var(--warm);
-    position: relative;
-    z-index: 2;
-  }
-  .intro-card h2 {
-    font-size: 17px;
-    font-weight: 800;
-    color: var(--text);
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .intro-card p {
-    font-size: 14px;
-    line-height: 1.75;
-    color: var(--text-soft);
-  }
-  .intro-card p + p { margin-top: 8px; }
-  .promise-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 16px;
-  }
-  .promise-pill {
-    background: var(--sky-light);
-    color: var(--sky);
-    border-radius: 999px;
-    padding: 6px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    border: 1.5px solid var(--sky-mid);
-  }
+/* ── CUSTOM CURSOR ── */
+#cursor {
+  position: fixed;
+  width: 14px; height: 14px;
+  background: var(--rust);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.08s, width 0.2s, height 0.2s, background 0.2s;
+  mix-blend-mode: multiply;
+}
+#cursor-ring {
+  position: fixed;
+  width: 40px; height: 40px;
+  border: 1.5px solid var(--rust);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.18s ease, width 0.25s, height 0.25s, opacity 0.2s;
+  opacity: 0.5;
+}
+body:hover #cursor { opacity: 1; }
 
-  /* ── URGENT BANNER ── */
-  .urgent-banner {
-    max-width: 720px;
-    margin: 16px auto 0;
-    background: var(--rose-light);
-    border: 2px solid var(--rose);
-    border-radius: var(--radius);
-    padding: 18px 22px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .urgent-banner .icon { font-size: 28px; flex-shrink: 0; }
-  .urgent-banner strong { color: var(--rose); font-size: 15px; display: block; margin-bottom: 4px; }
-  .urgent-banner p { font-size: 13px; color: var(--text-soft); }
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.4rem 3rem;
+  mix-blend-mode: multiply;
+}
 
-  /* ── FORM WRAPPER ── */
-  .form-wrap {
-    max-width: 720px;
-    margin: 24px auto 0;
-    padding: 0 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+.nav-logo {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  text-decoration: none;
+}
 
-  /* ── SECTION CARD ── */
-  .section-card {
-    background: var(--white);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    transition: box-shadow .2s;
-  }
-  .section-card:focus-within {
-    box-shadow: 0 6px 32px rgba(91,164,207,0.2);
-  }
-  .section-header {
-    padding: 18px 24px 14px;
-    border-bottom: 1.5px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .section-num {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: var(--sky);
-    color: #fff;
-    font-size: 16px;
-    font-weight: 900;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .section-header h3 { font-size: 16px; font-weight: 800; color: var(--text); }
-  .section-header p { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
-  .section-body { padding: 22px 24px; display: flex; flex-direction: column; gap: 20px; }
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+  list-style: none;
+}
 
-  /* ── FIELD ── */
-  .field { display: flex; flex-direction: column; gap: 8px; }
-  .field-label {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .req { color: var(--rose); font-size: 13px; }
-  .opt-tag {
-    background: var(--green-light);
-    color: var(--green);
-    font-size: 11px;
-    font-weight: 700;
-    border-radius: 999px;
-    padding: 2px 8px;
-  }
-  .field-hint { font-size: 12px; color: var(--text-soft); }
+.nav-links a {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 1.5px;
+  background: var(--rust);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s;
+}
+.nav-links a:hover::after { transform: scaleX(1); }
 
-  input[type="text"],
-  input[type="date"],
-  select,
-  textarea {
-    width: 100%;
-    font-family: 'Nunito', sans-serif;
-    font-size: 14px;
-    color: var(--text);
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    outline: none;
-    transition: border-color .2s, background .2s;
-  }
-  input[type="text"]:focus,
-  input[type="date"]:focus,
-  select:focus,
-  textarea:focus {
-    border-color: var(--sky);
-    background: var(--white);
-  }
-  textarea { resize: vertical; min-height: 100px; }
+/* ── LANG TOGGLE ── */
+.lang-toggle {
+  display: flex;
+  gap: 0;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.lang-btn {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  padding: 4px 10px;
+  background: transparent;
+  color: var(--ink);
+  border: none;
+  cursor: none;
+  transition: all 0.2s;
+}
+.lang-btn.active {
+  background: var(--ink);
+  color: var(--cream);
+}
 
-  /* ── RADIO & CHECKBOX ── */
-  .options-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 10px;
-  }
-  .options-col { display: flex; flex-direction: column; gap: 10px; }
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 8rem 3rem 4rem;
+  position: relative;
+  overflow: hidden;
+  background: var(--cream);
+}
 
-  .opt-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    cursor: pointer;
-    transition: all .15s;
-    user-select: none;
-  }
-  .opt-item:hover { border-color: var(--sky); background: var(--sky-light); }
-  .opt-item input { display: none; }
-  .opt-item input:checked ~ .opt-box { background: var(--sky); border-color: var(--sky); }
-  .opt-item input:checked ~ .opt-box::after { opacity: 1; }
-  .opt-item:has(input:checked) { border-color: var(--sky); background: var(--sky-light); }
+/* Grain texture overlay */
+#hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
 
-  .opt-box {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    border: 2.5px solid var(--border);
-    background: var(--white);
-    flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    transition: all .15s;
-    position: relative;
-  }
-  .opt-box::after {
-    content: '';
-    width: 8px; height: 8px;
-    background: #fff;
-    border-radius: 50%;
-    opacity: 0;
-    transition: opacity .15s;
-  }
+.hero-left {
+  position: relative;
+  z-index: 1;
+}
 
-  .chk-box {
-    width: 20px; height: 20px;
-    border-radius: 6px;
-    border: 2.5px solid var(--border);
-    background: var(--white);
-    flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    transition: all .15s;
-  }
-  .opt-item input[type="checkbox"]:checked ~ .chk-box {
-    background: var(--teal);
-    border-color: var(--teal);
-  }
-  .opt-item input[type="checkbox"]:checked ~ .chk-box::after {
-    content: '✓';
-    color: #fff;
-    font-size: 13px;
-    font-weight: 900;
-  }
-  .opt-item:has(input[type="checkbox"]:checked) { border-color: var(--teal); background: var(--teal-light); }
+.hero-tag {
+  font-size: 0.68rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.3s ease forwards;
+}
+.hero-tag::before { content: '✦'; font-size: 0.5rem; }
 
-  .opt-label { font-size: 14px; font-weight: 600; }
-  .opt-emoji { font-size: 18px; }
+h1 {
+  font-family: var(--display);
+  font-size: clamp(5rem, 10vw, 10rem);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.5s ease forwards;
+}
 
-  /* row layout for grid of 2 */
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
+h1 .line-accent {
+  color: var(--rust);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.75em;
+}
 
-  /* ── SUBMIT ── */
-  .submit-area {
-    background: var(--white);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 28px 24px;
-    text-align: center;
-  }
-  .submit-note { font-size: 13px; color: var(--text-soft); margin-bottom: 18px; }
-  .submit-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: linear-gradient(135deg, var(--sky), var(--teal));
-    color: #fff;
-    font-family: 'Nunito', sans-serif;
-    font-size: 17px;
-    font-weight: 900;
-    border: none;
-    border-radius: 14px;
-    padding: 16px 40px;
-    cursor: pointer;
-    box-shadow: 0 6px 20px rgba(56,168,157,0.3);
-    transition: transform .15s, box-shadow .15s;
-    letter-spacing: 0.3px;
-  }
-  .submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 28px rgba(56,168,157,0.4);
-  }
-  .submit-btn:active { transform: translateY(0); }
+.hero-sub {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-style: italic;
+  color: #5a4a35;
+  margin-bottom: 2.5rem;
+  max-width: 400px;
+  line-height: 1.5;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.7s ease forwards;
+}
 
-  /* ── SUCCESS ── */
-  .success-icon { font-size: 72px; margin-bottom: 20px; animation: bounce .5s; }
-  @keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
-  .success-card h2 { font-size: 24px; font-weight: 900; color: var(--teal); margin-bottom: 12px; }
-  .success-card p { font-size: 15px; color: var(--text-soft); line-height: 1.7; }
+.hero-ctas {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.9s ease forwards;
+}
 
-  /* misc */
-  .divider { height: 1.5px; background: var(--border); border-radius: 999px; }
-  .anon-fields { transition: opacity .3s, max-height .3s; overflow: hidden; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 0.9rem 2rem;
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  transition: all 0.25s;
+  cursor: none;
+  position: relative;
+  overflow: hidden;
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform: translateY(101%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.btn:hover::before { transform: translateY(0); }
+.btn:hover { color: var(--cream); }
+.btn span { position: relative; z-index: 1; }
+.btn-fill { background: var(--ink); color: var(--cream); }
+.btn-fill::before { background: var(--rust); }
+.btn-fill:hover { color: var(--cream); }
 
-  /* SUCCESS TIMELINE */
-  .success-icon { font-size: 72px; margin-bottom: 16px; animation: pop 0.5s ease; }
-  80%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
-  .success-card h2 { font-size: 26px; font-weight: 900; color: #38A89D; margin-bottom: 8px; }
-  .success-card > p { font-size: 15px; color: #718096; margin-bottom: 28px; }
+/* SCROLL HINT */
+.scroll-hint {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 3rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.4;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  opacity: 0;
+  animation: fadeIn 1s 1.5s ease forwards;
+}
+.scroll-hint::after {
+  content: '';
+  display: block;
+  width: 32px; height: 1px;
+  background: var(--ink);
+  animation: scrollLine 2s infinite;
+}
+@keyframes scrollLine {
+  0%,100% { width: 32px; opacity: 0.4; }
+  50% { width: 60px; opacity: 0.8; }
+}
 
-  .status-timeline { text-align: left; margin: 24px 0; display: flex; flex-direction: column; gap: 0; }
-  </style>
+/* ── HERO ILLUSTRATION ── */
+.hero-right {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  animation: fadeIn 1s 0.6s ease forwards;
+}
+
+#hero-svg {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  filter: drop-shadow(8px 16px 40px rgba(26,18,9,0.15));
+}
+
+/* Floating elements */
+.float-el {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards;
+}
+
+/* ── MARQUEE STRIP ── */
+.marquee-strip {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 0.9rem 0;
+  overflow: hidden;
+  white-space: nowrap;
+  border-top: 1.5px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+}
+.marquee-inner {
+  display: inline-flex;
+  animation: marquee 20s linear infinite;
+  gap: 0;
+}
+.marquee-item {
+  font-family: var(--display);
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+  padding: 0 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.marquee-dot {
+  width: 6px; height: 6px;
+  background: var(--rust);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ── SECTIONS ── */
+.section {
+  padding: 7rem 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.section-label::before { content: '✦'; font-size: 0.45rem; }
+
+.section-title {
+  font-family: var(--display);
+  font-size: clamp(2.8rem, 5vw, 5rem);
+  line-height: 0.92;
+  letter-spacing: 0.02em;
+  margin-bottom: 3rem;
+}
+
+/* ── ABOUT ── */
+#about { background: var(--cream); }
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: start;
+}
+
+.about-illo {
+  position: relative;
+}
+
+.about-card {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 3rem;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.about-card::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 200px; height: 200px;
+  background: var(--rust);
+  border-radius: 50%;
+  opacity: 0.15;
+}
+
+.about-card-name {
+  font-family: var(--display);
+  font-size: 2.8rem;
+  line-height: 0.95;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.03em;
+}
+.about-card-name em {
+  color: var(--gold);
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+.about-card-role {
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(245,240,232,0.55);
+  margin-bottom: 2rem;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(245,240,232,0.12);
+}
+.stat-item { text-align: center; }
+.stat-num {
+  font-family: var(--display);
+  font-size: 2.4rem;
+  color: var(--gold);
+  line-height: 1;
+}
+.stat-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(245,240,232,0.4);
+  margin-top: 0.3rem;
+}
+
+.about-text { }
+
+.about-bio-large {
+  font-family: var(--serif);
+  font-size: 1.45rem;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--ink);
+  margin-bottom: 1.8rem;
+}
+
+.about-bio-body {
+  font-size: 0.82rem;
+  line-height: 1.9;
+  color: #5a4a35;
+  margin-bottom: 2rem;
+}
+
+.pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.pill {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1.5px solid var(--ink);
+  padding: 0.35rem 0.9rem;
+  border-radius: 100px;
+  color: var(--ink);
+  transition: all 0.2s;
+}
+.pill:hover { background: var(--ink); color: var(--cream); }
+
+/* ── EXPERIENCE ── */
+#experience {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 7rem 0;
+}
+
+.exp-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 3rem;
+}
+
+#experience .section-label { color: var(--gold); }
+#experience .section-title { color: var(--cream); }
+
+.exp-list { margin-top: 1rem; }
+
+.exp-item {
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  gap: 3rem;
+  padding: 2.2rem 0;
+  border-top: 1px solid rgba(245,240,232,0.1);
+  align-items: start;
+  transition: background 0.2s;
+  cursor: none;
+  position: relative;
+}
+.exp-item::after {
+  content: '';
+  position: absolute;
+  left: -3rem; right: -3rem; top: 0; bottom: 0;
+  background: rgba(255,255,255,0.02);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.exp-item:hover::after { opacity: 1; }
+.exp-item:last-child { border-bottom: 1px solid rgba(245,240,232,0.1); }
+
+.exp-year {
+  font-family: var(--display);
+  font-size: 1.6rem;
+  color: rgba(245,240,232,0.25);
+  line-height: 1;
+  padding-top: 0.2rem;
+}
+
+.exp-role-title {
+  font-family: var(--display);
+  font-size: 2rem;
+  letter-spacing: 0.03em;
+  color: var(--cream);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.exp-company {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.exp-current {
+  width: 6px; height: 6px;
+  background: var(--teal);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(26,140,122,0.4)} 50%{box-shadow:0 0 0 6px rgba(26,140,122,0)} }
+
+.exp-desc {
+  font-size: 0.8rem;
+  line-height: 1.8;
+  color: rgba(245,240,232,0.5);
+  max-width: 480px;
+}
+
+.exp-arrow {
+  font-size: 1.5rem;
+  color: rgba(245,240,232,0.15);
+  align-self: center;
+  transition: all 0.25s;
+}
+.exp-item:hover .exp-arrow {
+  color: var(--rust);
+  transform: translateX(4px);
+}
+
+/* ── SKILLS ── */
+#skills { background: var(--cream); }
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5px;
+  background: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+
+.skill-card {
+  background: var(--cream);
+  padding: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+  cursor: none;
+}
+.skill-card:hover { background: var(--ink); }
+.skill-card:hover .skill-name { color: var(--cream); }
+.skill-card:hover .skill-desc { color: rgba(245,240,232,0.55); }
+.skill-card:hover .skill-icon-svg path,
+.skill-card:hover .skill-icon-svg circle,
+.skill-card:hover .skill-icon-svg rect { stroke: var(--cream); }
+
+.skill-num {
+  font-family: var(--display);
+  font-size: 5rem;
+  line-height: 1;
+  color: rgba(26,18,9,0.05);
+  position: absolute;
+  top: 1rem; right: 1.5rem;
+  transition: color 0.3s;
+}
+.skill-card:hover .skill-num { color: rgba(245,240,232,0.05); }
+
+.skill-icon-svg {
+  width: 36px; height: 36px;
+  margin-bottom: 1.2rem;
+}
+.skill-icon-svg path, .skill-icon-svg circle, .skill-icon-svg rect {
+  stroke: var(--ink);
+  transition: stroke 0.3s;
+}
+
+.skill-name {
+  font-family: var(--display);
+  font-size: 1.6rem;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+  margin-bottom: 0.6rem;
+  transition: color 0.3s;
+  line-height: 1;
+}
+
+.skill-desc {
+  font-size: 0.72rem;
+  line-height: 1.7;
+  color: #7a6a55;
+  transition: color 0.3s;
+}
+
+/* ── EDUCATION ── */
+#education { background: var(--teal); color: var(--cream); padding: 7rem 0; }
+.edu-inner { max-width: 1200px; margin: 0 auto; padding: 0 3rem; }
+#education .section-label { color: rgba(245,240,232,0.6); }
+#education .section-title { color: var(--cream); }
+
+.edu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: rgba(245,240,232,0.15); margin-top: 1rem; }
+.edu-card {
+  background: rgba(26,140,122,1);
+  padding: 3rem;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+.edu-card:hover { background: rgba(245,240,232,0.08); }
+.edu-big-year {
+  font-family: var(--display);
+  font-size: 7rem;
+  line-height: 1;
+  color: rgba(245,240,232,0.06);
+  position: absolute;
+  bottom: 1rem; right: 2rem;
+  letter-spacing: -0.02em;
+}
+.edu-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border: 1px solid rgba(245,240,232,0.3);
+  padding: 0.3rem 0.8rem;
+  margin-bottom: 1.2rem;
+  color: rgba(245,240,232,0.7);
+}
+.edu-school { font-family: var(--display); font-size: 1.8rem; letter-spacing: 0.03em; color: var(--cream); margin-bottom: 0.5rem; line-height: 1; }
+.edu-field { font-size: 0.78rem; color: rgba(245,240,232,0.6); margin-bottom: 1.2rem; }
+.edu-gpa { font-family: var(--serif); font-style: italic; font-size: 1rem; color: var(--gold); }
+
+/* ── AWARD ── */
+.award-band {
+  background: var(--rust);
+  color: var(--cream);
+  padding: 5rem 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.award-band::before {
+  content: '🏆';
+  position: absolute;
+  font-size: 20rem;
+  opacity: 0.04;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  pointer-events: none;
+}
+.award-label { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(245,240,232,0.6); margin-bottom: 0.8rem; }
+.award-big { font-family: var(--display); font-size: clamp(3rem, 7vw, 7rem); line-height: 0.9; letter-spacing: 0.02em; }
+.award-org { font-family: var(--serif); font-style: italic; font-size: 1.3rem; color: rgba(245,240,232,0.7); margin-top: 1rem; }
+
+/* ── CONTACT ── */
+#contact { background: var(--cream); }
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: start;
+}
+
+.contact-big {
+  font-family: var(--display);
+  font-size: clamp(3rem, 6vw, 6rem);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  margin-bottom: 1.5rem;
+}
+.contact-big em {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--rust);
+}
+
+.contact-note {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #7a6a55;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+
+.contact-links { display: flex; flex-direction: column; gap: 0; }
+.contact-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 0;
+  border-top: 1.5px solid rgba(26,18,9,0.12);
+  text-decoration: none;
+  color: var(--ink);
+  transition: all 0.2s;
+  cursor: none;
+}
+.contact-link:last-child { border-bottom: 1.5px solid rgba(26,18,9,0.12); }
+.contact-link:hover { padding-left: 0.8rem; }
+.contact-link:hover .cl-arrow { transform: rotate(-45deg); color: var(--rust); }
+
+.cl-left { display: flex; flex-direction: column; gap: 0.2rem; }
+.cl-type { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(26,18,9,0.4); }
+.cl-value { font-family: var(--serif); font-size: 1.1rem; }
+.cl-arrow { font-size: 1.2rem; transition: all 0.2s; }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 2rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.foot-logo { font-family: var(--display); font-size: 1.3rem; letter-spacing: 0.05em; }
+.foot-copy { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(245,240,232,0.4); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  #hero { grid-template-columns: 1fr; padding-top: 7rem; }
+  .hero-right { display: none; }
+  .about-grid, .contact-grid, .edu-grid { grid-template-columns: 1fr; }
+  .skills-grid { grid-template-columns: 1fr 1fr; }
+  .exp-item { grid-template-columns: 1fr; gap: 0.5rem; }
+  .exp-arrow { display: none; }
+  nav { padding: 1rem 1.5rem; }
+  .section { padding: 5rem 1.5rem; }
+}
+@media (max-width: 600px) {
+  .skills-grid { grid-template-columns: 1fr; }
+  .stat-row { grid-template-columns: 1fr 1fr; }
+  .nav-links { display: none; }
+}
+</style>
 </head>
 <body>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-icon">🛡️</div>
-  <h1>Дээрэлхэлт Мэдээлэх Форм</h1>
-  <p class="hero-sub">Аюулгүй · Нууцлалтай · Таны талд байна</p>
-  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px">
-    <a href="track.html" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.4);color:#fff;font-family:inherit;font-size:14px;font-weight:700;text-decoration:none;padding:10px 22px;border-radius:999px;backdrop-filter:blur(8px);">
-      🔍 Мэдэгдлийн явц шалгах
-    </a>
-    <a href="admin.html" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.4);color:#fff;font-family:inherit;font-size:14px;font-weight:700;text-decoration:none;padding:10px 22px;border-radius:999px;backdrop-filter:blur(8px);">
-      🔐 Багшийн нэвтрэх хэсэг
-    </a>
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#" data-i18n="nav_logo">ӨӨДӨС</a>
+  <ul class="nav-links">
+    <li><a href="#about" data-i18n="nav_about">About</a></li>
+    <li><a href="#experience" data-i18n="nav_exp">Experience</a></li>
+    <li><a href="#skills" data-i18n="nav_skills">Skills</a></li>
+    <li><a href="#contact" data-i18n="nav_contact">Contact</a></li>
+  </ul>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('mn')">MN</button>
   </div>
-</div>
+</nav>
 
-<!-- INTRO CARD -->
-<div class="intro-card">
-  <h2>💛 Энд хандсанд баярлалаа</h2>
-  <p>
-    Энэ форм нь чамд аюулгүй, хэн ч мэдэхгүй газар өөрийн болон найзынхаа талаар мэдэгдэх боломжийг олгодог.
-    Чиний бичсэн мэдээлэл зөвхөн сургуулийн нийгмийн ажилтан болон удирдлагад хүрнэ, өөр хэнд ч хүргэгдэхгүй.
-  </p>
-  <div class="promise-row">
-    <span class="promise-pill">🔒 Нууцлалтай</span>
-    <span class="promise-pill">🧡 Шүүмжлэлгүй</span>
-    <span class="promise-pill">🏫 Сургуульд мэдэгдэнэ</span>
-    <span class="promise-pill">✅ Тусламж авах боломжтой</span>
-  </div>
-</div>
-
-<!-- URGENT HOTLINE BANNER -->
-<div class="urgent-banner" style="max-width:720px;margin:16px auto 0;margin-left:auto;margin-right:auto;">
-  <span class="icon">🆘</span>
-  <div>
-    <strong>Яаралтай тусламж хэрэгтэй бол</strong>
-    <p>Шууд багш эсвэл сургуулийн нийгмийн ажилтантай холбогдоорой.<br>
-    Хүүхдийн утас: <strong>108</strong> &nbsp;|&nbsp; Цагдаа: <strong>102</strong></p>
-  </div>
-</div>
-
-<!-- MAIN FORM -->
-<div id="formWrap"><form class="form-wrap" id="reportForm" onsubmit="return false;">
-
-  <!-- ── SECTION 1: ТУХАЙН СУРАГЧ ── -->
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-num">1</div>
-      <div>
-        <h3>Таны мэдээлэл</h3>
-        <p>Та болон нөхцөл байдлын талаарх үндсэн мэдээлэл</p>
-      </div>
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<section id="hero">
+  <div class="hero-left">
+    <div class="hero-tag" data-i18n="hero_tag">Lead Data Analyst · MBA Candidate</div>
+    <h1>
+      ӨӨДӨС<br>
+      <span class="line-accent" data-i18n="hero_h1_accent">& Strategist</span>
+    </h1>
+    <p class="hero-sub" data-i18n="hero_sub">Turning raw data into decisions — and decisions into business growth.</p>
+    <div class="hero-ctas">
+      <a href="#experience" class="btn btn-fill"><span data-i18n="cta_work">View My Work</span></a>
+      <a href="#contact" class="btn"><span data-i18n="cta_contact">Get In Touch</span></a>
     </div>
-    <div class="section-body">
+  </div>
 
-      <div class="row2">
-          <div class="field">
-            <label class="field-label">
-              Нэр, овог <span class="req">*</span>
-            </label>
-            <input type="text" id="f_ner" placeholder="Жишээ: Болд Батаа" required>
-          </div>
-          <div class="field">
-            <label class="field-label">
-              Хүйс <span class="req">*</span>
-            </label>
-            <div class="options-grid" style="grid-template-columns:1fr 1fr;">
-              <label class="opt-item">
-                <input type="radio" name="gender" value="Эрэгтэй">
-                <span class="opt-box"></span>
-                <span class="opt-label">👦 Эрэгтэй</span>
-              </label>
-              <label class="opt-item">
-                <input type="radio" name="gender" value="Эмэгтэй">
-                <span class="opt-box"></span>
-                <span class="opt-label">👧 Эмэгтэй</span>
-              </label>
+  <!-- ILLUSTRATED CHARACTER -->
+  <div class="hero-right">
+    <svg id="hero-svg" viewBox="0 0 500 560" xmlns="http://www.w3.org/2000/svg">
+      <!-- Background blob -->
+      <ellipse cx="250" cy="300" rx="200" ry="220" fill="#e8a020" opacity="0.12"/>
+
+      <!-- DESK -->
+      <rect x="80" y="390" width="340" height="12" rx="4" fill="#4a3520"/>
+      <rect x="110" y="402" width="16" height="80" rx="3" fill="#3a2812"/>
+      <rect x="374" y="402" width="16" height="80" rx="3" fill="#3a2812"/>
+
+      <!-- MONITOR -->
+      <rect x="155" y="290" width="190" height="100" rx="8" fill="#1a1209"/>
+      <rect x="163" y="298" width="174" height="82" rx="4" fill="#0d1f3c"/>
+      <!-- Screen glow -->
+      <rect x="163" y="298" width="174" height="82" rx="4" fill="url(#screenGrad)" opacity="0.9"/>
+      <!-- Code lines on screen -->
+      <rect x="173" y="310" width="60" height="3" rx="1" fill="#4f9eff" opacity="0.9"/>
+      <rect x="173" y="318" width="90" height="3" rx="1" fill="#3ecf8e" opacity="0.8"/>
+      <rect x="183" y="326" width="40" height="3" rx="1" fill="#f5a623" opacity="0.8"/>
+      <rect x="183" y="334" width="70" height="3" rx="1" fill="#4f9eff" opacity="0.7"/>
+      <rect x="173" y="342" width="50" height="3" rx="1" fill="#3ecf8e" opacity="0.9"/>
+      <rect x="183" y="350" width="80" height="3" rx="1" fill="#c94f2a" opacity="0.8"/>
+      <rect x="173" y="358" width="30" height="3" rx="1" fill="#f5a623" opacity="0.7"/>
+      <!-- Monitor stand -->
+      <rect x="238" y="390" width="24" height="10" rx="2" fill="#2a1a0a"/>
+      <rect x="220" y="398" width="60" height="6" rx="3" fill="#2a1a0a"/>
+
+      <!-- LAPTOP -->
+      <rect x="300" y="358" width="110" height="70" rx="6" fill="#2a2a2a"/>
+      <rect x="306" y="363" width="98" height="56" rx="3" fill="#1a3a5a"/>
+      <!-- Laptop screen mini chart -->
+      <polyline points="316,405 330,395 345,400 360,388 375,392 390,382" stroke="#4f9eff" stroke-width="2" fill="none"/>
+      <!-- Laptop base -->
+      <rect x="294" y="428" width="122" height="6" rx="3" fill="#1a1a1a"/>
+
+      <!-- COFFEE CUP -->
+      <rect x="95" y="368" width="32" height="28" rx="4" fill="#c94f2a"/>
+      <rect x="99" y="372" width="24" height="18" rx="2" fill="#f5f0e8" opacity="0.9"/>
+      <path d="M127 376 Q138 376 138 384 Q138 392 127 392" stroke="#8b3a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <!-- Steam -->
+      <path d="M108 366 Q110 360 108 354" stroke="#aaa" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+      <path d="M116 364 Q118 357 116 350" stroke="#aaa" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.4"/>
+
+      <!-- PERSON BODY -->
+      <!-- Torso / shirt -->
+      <rect x="198" y="245" width="104" height="60" rx="8" fill="#1a2f5a"/>
+      <!-- Collar detail -->
+      <path d="M240 250 L250 260 L260 250" stroke="#f5f0e8" stroke-width="2" fill="none"/>
+      <!-- Arms -->
+      <rect x="170" y="252" width="32" height="18" rx="8" fill="#c8956a" transform="rotate(-10 186 261)"/>
+      <rect x="298" y="252" width="32" height="18" rx="8" fill="#c8956a" transform="rotate(10 314 261)"/>
+      <!-- Hands on keyboard -->
+      <ellipse cx="192" cy="298" rx="16" ry="10" fill="#c8956a"/>
+      <ellipse cx="308" cy="298" rx="16" ry="10" fill="#c8956a"/>
+      <!-- Keyboard under hands -->
+      <rect x="160" y="300" width="180" height="22" rx="4" fill="#2a2a35"/>
+
+      <!-- HEAD -->
+      <ellipse cx="250" cy="205" rx="48" ry="52" fill="#c8956a"/>
+      <!-- Hair -->
+      <ellipse cx="250" cy="170" rx="50" ry="28" fill="#1a1209"/>
+      <rect x="200" y="165" width="100" height="24" fill="#1a1209" rx="4"/>
+      <!-- Ear -->
+      <ellipse cx="202" cy="208" rx="7" ry="9" fill="#c8956a"/>
+      <ellipse cx="298" cy="208" rx="7" ry="9" fill="#c8956a"/>
+
+      <!-- EYES (will move with mouse) -->
+      <g id="eye-left">
+        <ellipse cx="232" cy="208" rx="9" ry="10" fill="white"/>
+        <circle id="pupil-left" cx="234" cy="209" r="5" fill="#1a1209"/>
+        <circle cx="236" cy="207" r="1.5" fill="white"/>
+      </g>
+      <g id="eye-right">
+        <ellipse cx="268" cy="208" rx="9" ry="10" fill="white"/>
+        <circle id="pupil-right" cx="270" cy="209" r="5" fill="#1a1209"/>
+        <circle cx="272" cy="207" r="1.5" fill="white"/>
+      </g>
+
+      <!-- Eyebrows -->
+      <path d="M223 197 Q232 193 241 196" stroke="#1a1209" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M259 196 Q268 193 277 197" stroke="#1a1209" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+      <!-- Smile -->
+      <path d="M237 225 Q250 235 263 225" stroke="#8b4a2a" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+      <!-- GLASSES -->
+      <rect x="221" y="200" width="22" height="16" rx="5" fill="none" stroke="#1a1209" stroke-width="2"/>
+      <rect x="257" y="200" width="22" height="16" rx="5" fill="none" stroke="#1a1209" stroke-width="2"/>
+      <path d="M243 208 L257 208" stroke="#1a1209" stroke-width="2"/>
+      <path d="M219 204 Q210 202 207 205" stroke="#1a1209" stroke-width="2" fill="none"/>
+      <path d="M281 204 Q290 202 293 205" stroke="#1a1209" stroke-width="2" fill="none"/>
+
+      <!-- FLOATING BADGES -->
+      <!-- Power BI badge -->
+      <g transform="translate(30, 180)" style="filter:drop-shadow(2px 4px 8px rgba(0,0,0,0.15))">
+        <rect width="80" height="26" rx="13" fill="#f5a623"/>
+        <text x="40" y="17" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="white" font-weight="500">POWER BI</text>
+      </g>
+      <!-- Azure badge -->
+      <g transform="translate(380, 200)" style="filter:drop-shadow(2px 4px 8px rgba(0,0,0,0.15))">
+        <rect width="66" height="26" rx="13" fill="#4f9eff"/>
+        <text x="33" y="17" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="white" font-weight="500">AZURE</text>
+      </g>
+      <!-- MBA badge -->
+      <g transform="translate(390, 310)" style="filter:drop-shadow(2px 4px 8px rgba(0,0,0,0.15))">
+        <rect width="52" height="26" rx="13" fill="#8b5fb8"/>
+        <text x="26" y="17" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="white" font-weight="500">MBA</text>
+      </g>
+      <!-- Star -->
+      <text x="60" y="350" font-size="24" fill="#c94f2a" opacity="0.6">✦</text>
+      <text x="420" y="160" font-size="18" fill="#e8a020" opacity="0.7">✦</text>
+      <text x="140" y="150" font-size="14" fill="#1a8c7a" opacity="0.5">✦</text>
+
+      <defs>
+        <linearGradient id="screenGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0d1f3c"/>
+          <stop offset="100%" stop-color="#1a3a5a"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="scroll-hint" data-i18n="scroll_hint">Scroll to explore</div>
+</section>
+
+<!-- ═══════════════════════ MARQUEE ═══════════════════════ -->
+<div class="marquee-strip">
+  <div class="marquee-inner">
+    <span class="marquee-item"><span class="marquee-dot"></span><span data-i18n="m1">Data Analytics</span></span>
+    <span class="marquee-item"><span class="marquee-dot"></span><span data-i18n="m2">Power BI</span></span>
+    <span class="marquee-item"><span class="marquee-dot"></span><span data-i18n="m3">Azure</span></span>
+    <span class="marquee-item"><span class="marquee-dot"></span><span data-i18n="m4">Strategy</span></span>
+    <span class="marquee-item"><span class="marquee-dot"></span><span data-i18n="m5">MBA</span></span>
+    <span class="marquee-item"><span class="marquee-dot"></span><span data-i18n="m6">MSM Group</span></span>
+    <span class="marquee-item"><span class="marquee-dot"></span><span data-i18n="m1b">Data Analytics</span></span>
+    <span class="marquee-item"><span class="marquee-dot"></span><span data-i18n="m2b">Power BI</span></span>
+    <span class="marquee-item"><span class="marquee-dot"></span><span data-i18n="m3b">Azure</span></span>
+    <span class="marquee-item"><span class="marquee-dot"></span><span data-i18n="m4b">Strategy</span></span>
+    <span class="marquee-item"><span class="marquee-dot"></span><span data-i18n="m5b">MBA</span></span>
+    <span class="marquee-item"><span class="marquee-dot"></span><span data-i18n="m6b">MSM Group</span></span>
+  </div>
+</div>
+
+<!-- ═══════════════════════ ABOUT ═══════════════════════ -->
+<section id="about">
+  <div class="section reveal">
+    <div class="section-label" data-i18n="about_label">About Me</div>
+    <div class="about-grid">
+      <div class="about-illo">
+        <div class="about-card">
+          <div class="about-card-name">БАЯР<br><em>САЙХАН</em><br>ӨӨДӨС</div>
+          <div class="about-card-role" data-i18n="about_card_role">Lead Data Analyst · MSM Group</div>
+          <div class="stat-row">
+            <div class="stat-item">
+              <div class="stat-num">2+</div>
+              <div class="stat-label" data-i18n="stat1">Years Analytics</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-num">150</div>
+              <div class="stat-label" data-i18n="stat2">Team Led</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-num">3.61</div>
+              <div class="stat-label" data-i18n="stat3">MBA GPA</div>
             </div>
           </div>
         </div>
-
-      <div class="field">
-        <label class="field-label">Ангийн түвшин <span class="req">*</span></label>
-        <div class="options-grid" style="grid-template-columns:1fr 1fr;">
-          <label class="opt-item" id="lbl-dundangi">
-            <input type="radio" name="schoolLevel" value="dund" onchange="onLevelChange()">
-            <span class="opt-box"></span>
-            <span class="opt-emoji">📘</span>
-            <span class="opt-label">Дунд анги (6–9)</span>
-          </label>
-          <label class="opt-item" id="lbl-akhlakhangi">
-            <input type="radio" name="schoolLevel" value="akhlakh" onchange="onLevelChange()">
-            <span class="opt-box"></span>
-            <span class="opt-emoji">🎓</span>
-            <span class="opt-label">Ахлах анги (10–12)</span>
-          </label>
+      </div>
+      <div class="about-text">
+        <p class="about-bio-large" data-i18n="about_bio_large">"I turn raw data into clarity — and clarity into growth."</p>
+        <p class="about-bio-body" data-i18n="about_bio">I started my career as a software engineer at OATI in Minneapolis, USA, then shifted into data analytics at MSM Group in Ulaanbaatar. Now, as Lead Data Analyst, I design data infrastructure, build Power BI ecosystems, and help leadership make faster, smarter decisions. I'm pursuing an MBA to complete my transition from technologist to strategic business leader — targeting GM and Strategy Director roles at Mongolia's leading institutions.</p>
+        <div class="pill-list">
+          <span class="pill">Power BI</span>
+          <span class="pill">Azure ADF</span>
+          <span class="pill">SQL</span>
+          <span class="pill">Python</span>
+          <span class="pill">DAX</span>
+          <span class="pill">ETL</span>
+          <span class="pill">Synapse</span>
+          <span class="pill">MBA</span>
         </div>
       </div>
+    </div>
+  </div>
+</section>
 
-      <div class="row2" id="angi-buleg-row" style="display:none;">
-        <div class="field">
-          <label class="field-label">Анги <span class="req">*</span></label>
-          <select id="f_angi" required>
-            <option value="">Анги сонгох</option>
-          </select>
+<!-- ═══════════════════════ EXPERIENCE ═══════════════════════ -->
+<section id="experience">
+  <div class="exp-inner">
+    <div class="section-label reveal" data-i18n="exp_label">Experience</div>
+    <div class="section-title reveal" data-i18n="exp_title">WORK HISTORY</div>
+    <div class="exp-list">
+
+      <div class="exp-item reveal">
+        <div class="exp-year">2025</div>
+        <div>
+          <div class="exp-role-title" data-i18n="exp1_role">LEAD DATA ANALYST</div>
+          <div class="exp-company"><span class="exp-current"></span>MSM Group ХХК</div>
+          <p class="exp-desc" data-i18n="exp1_desc">Architecting enterprise data infrastructure on Azure Data Factory. Leading the development team with strategic direction. Delivering Power BI analytics for finance & sales. Cultivating a data-driven culture through governance and quality frameworks.</p>
         </div>
-        <div class="field">
-          <label class="field-label">Бүлэг <span class="req">*</span></label>
-          <select id="f_buleg" required>
-            <option value="">Бүлэг сонгох</option>
-            <option>1-р бүлэг</option><option>2-р бүлэг</option><option>3-р бүлэг</option>
-            <option>4-р бүлэг</option><option>5-р бүлэг</option><option>6-р бүлэг</option>
-            <option>7-р бүлэг</option><option>8-р бүлэг</option><option>9-р бүлэг</option>
-            <option>10-р бүлэг</option><option>11-р бүлэг</option><option>12-р бүлэг</option>
-          </select>
-        </div>
+        <div class="exp-arrow">→</div>
       </div>
 
-      <div class="field">
-        <label class="field-label">Энэ мэдэгдлийг хэн мэдэгдэж байна? <span class="req">*</span></label>
-        <div class="options-col">
-          <label class="opt-item">
-            <input type="radio" name="reporter" value="Өөрөө дээрэлхэгдэж байгаа" required>
-            <span class="opt-box"></span>
-            <span class="opt-emoji">🙋</span>
-            <span class="opt-label">Өөрөө дээрэлхэгдэж байгаа</span>
-          </label>
-          <label class="opt-item">
-            <input type="radio" name="reporter" value="Найзынхаа талаар мэдэгдэж байгаа">
-            <span class="opt-box"></span>
-            <span class="opt-emoji">👫</span>
-            <span class="opt-label">Найзынхаа талаар мэдэгдэж байгаа</span>
-          </label>
-          <label class="opt-item">
-            <input type="radio" name="reporter" value="Гэрч болсон">
-            <span class="opt-box"></span>
-            <span class="opt-emoji">👀</span>
-            <span class="opt-label">Гэрч болсон</span>
-          </label>
+      <div class="exp-item reveal">
+        <div class="exp-year">2024</div>
+        <div>
+          <div class="exp-role-title" data-i18n="exp2_role">DATA ANALYST</div>
+          <div class="exp-company">MSM Group ХХК</div>
+          <p class="exp-desc" data-i18n="exp2_desc">Developed ETL pipelines from multiple sources, owning reliability end-to-end. Designed interactive Power BI dashboards for daily business unit operations. Built the analytical foundation for data-driven decision-making.</p>
         </div>
+        <div class="exp-arrow">→</div>
+      </div>
+
+      <div class="exp-item reveal">
+        <div class="exp-year">2022</div>
+        <div>
+          <div class="exp-role-title" data-i18n="exp3_role">SOFTWARE ENGINEER</div>
+          <div class="exp-company">OATI, Inc. · Minneapolis, USA</div>
+          <p class="exp-desc" data-i18n="exp3_desc">Built high-load backend systems in Java / Spring Boot / C#. Deployed RESTful APIs and CI/CD pipelines. Optimized MongoDB & PostgreSQL. Delivered quality Agile code with full unit and E2E test coverage.</p>
+        </div>
+        <div class="exp-arrow">→</div>
+      </div>
+
+      <div class="exp-item reveal">
+        <div class="exp-year">2017</div>
+        <div>
+          <div class="exp-role-title" data-i18n="exp4_role">SERVICE MANAGER</div>
+          <div class="exp-company">Sodexo</div>
+          <p class="exp-desc" data-i18n="exp4_desc">Rose from frontline staff to managing a 150+ person team. Optimized task allocation, resolved escalations swiftly, and ran cross-training programs that boosted team flexibility and total productivity.</p>
+        </div>
+        <div class="exp-arrow">→</div>
       </div>
 
     </div>
   </div>
+</section>
 
-  <!-- ── SECTION 2: ДЭЭРЭЛХЭЛТИЙН ТӨРӨЛ ── -->
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-num">2</div>
-      <div>
-        <h3>Дээрэлхэлтийн төрөл</h3>
-        <p>Болсон зүйлийг тодорхойлоорой — нэгээс олон сонгож болно</p>
-      </div>
-    </div>
-    <div class="section-body">
-      <div class="options-grid">
-        <label class="opt-item">
-          <input type="checkbox" name="type" value="Хэл амаар">
-          <span class="chk-box"></span>
-          <span class="opt-emoji">💬</span>
-          <span class="opt-label">Хэл амаар (доромжлол, дооглол)</span>
-        </label>
-        <label class="opt-item">
-          <input type="checkbox" name="type" value="Бие махбодийн">
-          <span class="chk-box"></span>
-          <span class="opt-emoji">👊</span>
-          <span class="opt-label">Бие махбодийн (зодох, түлхэх)</span>
-        </label>
-        <label class="opt-item">
-          <input type="checkbox" name="type" value="Цахим дээрэлхэлт">
-          <span class="chk-box"></span>
-          <span class="opt-emoji">📱</span>
-          <span class="opt-label">Цахим (онлайн доромжлол, зургийг тараах)</span>
-        </label>
-        <label class="opt-item">
-          <input type="checkbox" name="type" value="Гадуурхалт">
-          <span class="chk-box"></span>
-          <span class="opt-emoji">🚫</span>
-          <span class="opt-label">Гадуурхалт (тоохгүй байх, хамт нааддаггүй)</span>
-        </label>
-        <label class="opt-item">
-          <input type="checkbox" name="type" value="Эд хөрөнгийн">
-          <span class="chk-box"></span>
-          <span class="opt-emoji">🎒</span>
-          <span class="opt-label">Эд хөрөнгийн (зүйл авах, устгах)</span>
-        </label>
-        <label class="opt-item">
-          <input type="checkbox" name="type" value="Заналхийлэл">
-          <span class="chk-box"></span>
-          <span class="opt-emoji">⚠️</span>
-          <span class="opt-label">Заналхийлэл, айлган сүрдүүлэлт</span>
-        </label>
-        <label class="opt-item">
-          <input type="checkbox" name="type" value="Үндэс гадаад төрхийн хавчлага">
-          <span class="chk-box"></span>
-          <span class="opt-emoji">🌍</span>
-          <span class="opt-label">Үндэс, гадаад төрхийн хавчлага</span>
-        </label>
-        <label class="opt-item">
-          <input type="checkbox" name="type" value="Бусад төрөл">
-          <span class="chk-box"></span>
-          <span class="opt-emoji">📝</span>
-          <span class="opt-label">Бусад</span>
-        </label>
+<!-- ═══════════════════════ SKILLS ═══════════════════════ -->
+<section id="skills">
+  <div class="section">
+    <div class="section-label reveal" data-i18n="skills_label">Capabilities</div>
+    <div class="section-title reveal" data-i18n="skills_title">WHAT I DO</div>
+    <div class="skills-grid reveal">
+
+      <div class="skill-card">
+        <div class="skill-num">01</div>
+        <svg class="skill-icon-svg" viewBox="0 0 36 36" fill="none">
+          <rect x="4" y="18" width="6" height="14" rx="1" stroke-width="2"/>
+          <rect x="15" y="10" width="6" height="22" rx="1" stroke-width="2"/>
+          <rect x="26" y="4" width="6" height="28" rx="1" stroke-width="2"/>
+        </svg>
+        <div class="skill-name" data-i18n="sk1_name">POWER BI & DAX</div>
+        <p class="skill-desc" data-i18n="sk1_desc">Enterprise dashboards, data modeling, calculated columns, measures, and report optimization across Business Central & Azure sources.</p>
       </div>
 
-      <div class="field">
-        <label class="field-label">Энэ ямар давтамжтай болж байна? <span class="req">*</span></label>
-        <div class="options-grid" style="grid-template-columns:1fr 1fr;">
-          <label class="opt-item">
-            <input type="radio" name="frequency" value="Нэг удаа болсон" required>
-            <span class="opt-box"></span>
-            <span class="opt-label">Нэг удаа болсон</span>
-          </label>
-          <label class="opt-item">
-            <input type="radio" name="frequency" value="Хэд хэдэн удаа болсон">
-            <span class="opt-box"></span>
-            <span class="opt-label">Хэд хэдэн удаа болсон</span>
-          </label>
-          <label class="opt-item">
-            <input type="radio" name="frequency" value="Долоо хоног бүр болдог">
-            <span class="opt-box"></span>
-            <span class="opt-label">Долоо хоног бүр болдог</span>
-          </label>
-          <label class="opt-item">
-            <input type="radio" name="frequency" value="Өдөр бүр болдог">
-            <span class="opt-box"></span>
-            <span class="opt-label">Өдөр бүр болдог</span>
-          </label>
-        </div>
+      <div class="skill-card">
+        <div class="skill-num">02</div>
+        <svg class="skill-icon-svg" viewBox="0 0 36 36" fill="none">
+          <path d="M18 6 L30 12 V24 L18 30 L6 24 V12 Z" stroke-width="2"/>
+          <circle cx="18" cy="18" r="5" stroke-width="2"/>
+        </svg>
+        <div class="skill-name" data-i18n="sk2_name">AZURE PLATFORM</div>
+        <p class="skill-desc" data-i18n="sk2_desc">Azure Data Factory pipelines, Synapse Analytics, Fabric integration, and enterprise-scale cloud data architecture design.</p>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-num">03</div>
+        <svg class="skill-icon-svg" viewBox="0 0 36 36" fill="none">
+          <ellipse cx="18" cy="10" rx="13" ry="5" stroke-width="2"/>
+          <path d="M5 10 V26 Q5 31 18 31 Q31 31 31 26 V10" stroke-width="2"/>
+          <path d="M5 18 Q5 23 18 23 Q31 23 31 18" stroke-width="2"/>
+        </svg>
+        <div class="skill-name" data-i18n="sk3_name">SQL & ETL</div>
+        <p class="skill-desc" data-i18n="sk3_desc">Multi-source ETL pipeline engineering, query optimization on MS SQL Server & PostgreSQL, data quality and governance.</p>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-num">04</div>
+        <svg class="skill-icon-svg" viewBox="0 0 36 36" fill="none">
+          <path d="M10 8 L14 8 L18 20 L22 8 L26 8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8 14 H28" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="18" cy="27" r="4" stroke-width="2"/>
+        </svg>
+        <div class="skill-name" data-i18n="sk4_name">PYTHON</div>
+        <p class="skill-desc" data-i18n="sk4_desc">Data processing, automation scripting, and analytical workflows for business intelligence and reporting pipelines.</p>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-num">05</div>
+        <svg class="skill-icon-svg" viewBox="0 0 36 36" fill="none">
+          <rect x="6" y="6" width="24" height="24" rx="3" stroke-width="2"/>
+          <path d="M13 13 L13 23 L23 23" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="23" cy="13" r="3" stroke-width="2"/>
+        </svg>
+        <div class="skill-name" data-i18n="sk5_name">SOFTWARE ENG.</div>
+        <p class="skill-desc" data-i18n="sk5_desc">Java, Spring Boot, C# backend systems; RESTful API design; CI/CD pipelines; MongoDB & PostgreSQL optimization.</p>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-num">06</div>
+        <svg class="skill-icon-svg" viewBox="0 0 36 36" fill="none">
+          <path d="M18 6 L6 30 H30 Z" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M14 22 L18 14 L22 22" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <div class="skill-name" data-i18n="sk6_name">STRATEGY & MBA</div>
+        <p class="skill-desc" data-i18n="sk6_desc">Business strategy, planning, and leadership. Currently pursuing MBA (GPA 3.61) to bridge data expertise with executive decision-making.</p>
       </div>
 
     </div>
   </div>
+</section>
 
-  <!-- ── SECTION 3: БОЛСОН НӨХЦӨЛ ── -->
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-num">3</div>
-      <div>
-        <h3>Болсон нөхцөл байдал</h3>
-        <p>Хаана, хэзээ болсон тухай мэдээлэл</p>
+<!-- ═══════════════════════ EDUCATION ═══════════════════════ -->
+<section id="education">
+  <div class="edu-inner">
+    <div class="section-label reveal" data-i18n="edu_label">Education</div>
+    <div class="section-title reveal" data-i18n="edu_title">LEARNING PATH</div>
+    <div class="edu-grid reveal">
+      <div class="edu-card">
+        <div class="edu-big-year">2025</div>
+        <div class="edu-badge" data-i18n="edu1_badge">MBA · In Progress</div>
+        <div class="edu-school" data-i18n="edu1_school">FINANCIAL UNIVERSITY</div>
+        <div class="edu-field" data-i18n="edu1_field">Business Administration · Ulaanbaatar, Mongolia</div>
+        <div class="edu-gpa">GPA 3.61 — Est. Dec 2026</div>
       </div>
-    </div>
-    <div class="section-body">
-
-      <div class="row2">
-        <div class="field">
-          <label class="field-label">Болсон огноо <span class="opt-tag">Ойролцоо байж болно</span></label>
-          <input type="date" id="f_ognoo">
-        </div>
-        <div class="field">
-          <label class="field-label">Болсон газар <span class="req">*</span></label>
-          <select id="f_gazar" required>
-            <option value="">— Газар сонгох —</option>
-            <option>Анги дотор</option>
-            <option>Хоолны газар (буфет)</option>
-            <option>Ариун цэврийн өрөө</option>
-            <option>Сургуулийн талбай</option>
-            <option>Сургуулийн коридор</option>
-            <option>Сургуулийн гадна</option>
-            <option>Онлайн орчинд (интернет)</option>
-            <option>Бусад</option>
-          </select>
-        </div>
+      <div class="edu-card">
+        <div class="edu-big-year">2021</div>
+        <div class="edu-badge" data-i18n="edu2_badge">B.S. · Graduated</div>
+        <div class="edu-school">MINNESOTA STATE MANKATO</div>
+        <div class="edu-field" data-i18n="edu2_field">Information Technology · Minor in Mathematics · USA</div>
+        <div class="edu-gpa">GPA 3.36</div>
       </div>
-
-      <div class="field">
-        <label class="field-label">Болсон зүйлийг дэлгэрэнгүй тайлбарлаарай <span class="req">*</span></label>
-        <p class="field-hint">Чадах чинээгээрээ тодорхой бичсэн тусмаа бид тусалж чадна. Хэн ч чамайг буруутгахгүй. 💙</p>
-        <textarea id="f_tailbar" placeholder="Жишээ: ... анги дотор ... нэртэй хүүхэд надад ... гэж хэлсэн, ... хийсэн ..." required></textarea>
-      </div>
-
-      <div class="field">
-        <label class="field-label">🧑‍🤝‍🧑 Гэрч байсан уу?</label>
-        <div class="options-grid" style="grid-template-columns:1fr 1fr 1fr;">
-          <label class="opt-item">
-            <input type="radio" name="witness" value="Тийм байсан">
-            <span class="opt-box"></span>
-            <span class="opt-label">Тийм, байсан</span>
-          </label>
-          <label class="opt-item">
-            <input type="radio" name="witness" value="Байгаагүй">
-            <span class="opt-box"></span>
-            <span class="opt-label">Байгаагүй</span>
-          </label>
-          <label class="opt-item">
-            <input type="radio" name="witness" value="Мэдэхгүй">
-            <span class="opt-box"></span>
-            <span class="opt-label">Мэдэхгүй</span>
-          </label>
-        </div>
-      </div>
-
     </div>
   </div>
+</section>
 
-  <!-- ── SECTION 4: ДЭЭРЭЛХЭГЧ ── -->
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-num">4</div>
-      <div>
-        <h3>Дээрэлхэгчийн мэдээлэл</h3>
-        <p>Мэдэж байгаа зүйлийг л бичих хэрэгтэй — заавал биш</p>
-      </div>
-    </div>
-    <div class="section-body">
-
-      <div class="row2">
-        <div class="field">
-          <label class="field-label">Нэр <span class="opt-tag">Заавал биш</span></label>
-          <input type="text" id="f_bully_ner" placeholder="Нэр мэдэж байвал бичнэ үү">
-        </div>
-        <div class="field">
-          <label class="field-label">Анги, бүлэг <span class="opt-tag">Заавал биш</span></label>
-          <input type="text" id="f_bully_angi" placeholder="Жишээ: 8-р анги, 3-р бүлэг">
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label">Хүйс <span class="opt-tag">Заавал биш</span></label>
-        <div class="options-grid" style="grid-template-columns:1fr 1fr;">
-          <label class="opt-item"><input type="radio" name="bullyGender" value="Эрэгтэй"><span class="opt-box"></span><span class="opt-label">👦 Эрэгтэй</span></label>
-          <label class="opt-item"><input type="radio" name="bullyGender" value="Эмэгтэй"><span class="opt-box"></span><span class="opt-label">👧 Эмэгтэй</span></label>
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label">Нэмэлт тодорхойлолт <span class="req">*</span></label>
-        <p class="field-hint">Харагдах байдал, хамт байсан хүмүүс г.м — мэдэж байгаа бол бичнэ үү</p>
-        <textarea id="f_bully_todorh" placeholder="Жишээ: Ерөнхийдөө 3 хүүхэд байдаг, нэг нь цагаан малгайтай байдаг..." required style="min-height:80px;"></textarea>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ── SECTION 5: НЭМЭЛТ ── -->
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-num">5</div>
-      <div>
-        <h3>Нэмэлт мэдээлэл</h3>
-        <p>Бусад хэлэхийг хүссэн зүйл</p>
-      </div>
-    </div>
-    <div class="section-body">
-
-      <div class="field">
-        <label class="field-label">Өмнө нь мэдэгдэж байсан уу?</label>
-        <div class="options-grid" style="grid-template-columns:1fr 1fr;">
-          <label class="opt-item">
-            <input type="radio" name="prevReport" value="Тийм, өмнө мэдэгдсэн">
-            <span class="opt-box"></span>
-            <span class="opt-label">Тийм, мэдэгдсэн</span>
-          </label>
-          <label class="opt-item">
-            <input type="radio" name="prevReport" value="Үгүй, анх удаа">
-            <span class="opt-box"></span>
-            <span class="opt-label">Үгүй, анх удаа</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label">Нотлох баримт байна уу? <span class="opt-tag">Заавал биш</span></label>
-        <div class="options-grid">
-          <label class="opt-item">
-            <input type="checkbox" name="evidence" value="Screenshot зураг">
-            <span class="chk-box"></span>
-            <span class="opt-emoji">📸</span>
-            <span class="opt-label">Зурагт дэлгэцийн хэвлэл (screenshot)</span>
-          </label>
-          <label class="opt-item">
-            <input type="checkbox" name="evidence" value="Мессеж чат">
-            <span class="chk-box"></span>
-            <span class="opt-emoji">💬</span>
-            <span class="opt-label">Мессеж, чат</span>
-          </label>
-          <label class="opt-item">
-            <input type="checkbox" name="evidence" value="Видео аудио">
-            <span class="chk-box"></span>
-            <span class="opt-emoji">🎥</span>
-            <span class="opt-label">Видео, аудио</span>
-          </label>
-          <label class="opt-item">
-            <input type="checkbox" name="evidence" value="Гэрчийн нэр бий">
-            <span class="chk-box"></span>
-            <span class="opt-emoji">🧑</span>
-            <span class="opt-label">Гэрчийн нэр бий</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label">Нэмэлт хэлэхийг хүссэн зүйл байна уу? <span class="opt-tag">Заавал биш</span></label>
-        <textarea id="f_nemeltel" placeholder="Энд чөлөөтэй бичнэ үү — ямар ч зүйл хэлж болно, шүүмжлэхгүй..."></textarea>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ── SUBMIT ── -->
-  <div class="submit-area">
-    <p class="submit-note">
-      🔒 Таны мэдэгдэл зөвхөн сургуулийн эрх бүхий багш, нийгмийн ажилтанд хүрнэ.<br>
-      Форм илгээсний дараа нэмэлт асуулт байвал чамтай холбогдож болно.
-    </p>
-    <button type="button" class="submit-btn" onclick="handleSubmit()">✉️ Мэдэгдэл илгээх</button>
-  </div>
-
-</form>
-    </div>
+<!-- ═══════════════════════ AWARD ═══════════════════════ -->
+<div class="award-band reveal">
+  <div class="award-label" data-i18n="award_label">Recognition · 2024</div>
+  <div class="award-big" data-i18n="award_big">EMPLOYEE<br>OF THE YEAR</div>
+  <div class="award-org" data-i18n="award_org">MSM Group ХХК — Ulaanbaatar, Mongolia</div>
 </div>
+
+<!-- ═══════════════════════ CONTACT ═══════════════════════ -->
+<section id="contact">
+  <div class="section reveal">
+    <div class="section-label" data-i18n="contact_label">Let's Talk</div>
+    <div class="contact-grid">
+      <div>
+        <div class="contact-big" data-i18n="contact_big">GET IN<br><em>TOUCH</em></div>
+        <p class="contact-note" data-i18n="contact_note">Open to strategic roles in finance, conglomerates, and telecom. Targeting Strategy Manager and GM-track positions at Mongolia's leading organizations.</p>
+        <a href="mailto:uudusbayarsaikhan@gmail.com" class="btn btn-fill"><span data-i18n="contact_btn">Send a Message</span></a>
+      </div>
+      <div class="contact-links">
+        <a class="contact-link" href="tel:+97699223640">
+          <div class="cl-left">
+            <span class="cl-type" data-i18n="c_phone">Phone</span>
+            <span class="cl-value">+976 9922 3640</span>
+          </div>
+          <span class="cl-arrow">↗</span>
+        </a>
+        <a class="contact-link" href="mailto:uudusbayarsaikhan@gmail.com">
+          <div class="cl-left">
+            <span class="cl-type" data-i18n="c_email">Email</span>
+            <span class="cl-value">uudusbayarsaikhan@gmail.com</span>
+          </div>
+          <span class="cl-arrow">↗</span>
+        </a>
+        <div class="contact-link">
+          <div class="cl-left">
+            <span class="cl-type" data-i18n="c_location">Location</span>
+            <span class="cl-value" data-i18n="c_location_val">Khan-Uul, Ulaanbaatar, Mongolia</span>
+          </div>
+        </div>
+        <div class="contact-link">
+          <div class="cl-left">
+            <span class="cl-type" data-i18n="c_target">Target Roles</span>
+            <span class="cl-value" data-i18n="c_target_val">Strategy Manager · Commercial Director · GM</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">ӨӨДӨС</div>
+  <div class="foot-copy">© 2026 · Баярсайхан Өөдөс</div>
+</footer>
+
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyB0xlNX4MQwVtejTT_3KmyLSp3MUueQFVg",
-    authDomain: "school-bullying-report.firebaseapp.com",
-    projectId: "school-bullying-report",
-    storageBucket: "school-bullying-report.firebasestorage.app",
-    messagingSenderId: "644776624035",
-    appId: "1:644776624035:web:0037ea74bd6300cc622416"
-  };
-  if (!firebase.apps.length) { if (!firebase.apps || !firebase.apps.length) { firebase.initializeApp(firebaseConfig); } }
-  const db = firebase.firestore();
+// ═══════════════════════
+// TRANSLATIONS
+// ═══════════════════════
+const T = {
+  en: {
+    nav_logo:"ӨӨДӨС", nav_about:"About", nav_exp:"Experience", nav_skills:"Skills", nav_contact:"Contact",
+    hero_tag:"Lead Data Analyst · MBA Candidate",
+    hero_h1_accent:"& Strategist",
+    hero_sub:"Turning raw data into decisions — and decisions into business growth.",
+    cta_work:"View My Work", cta_contact:"Get In Touch",
+    scroll_hint:"Scroll to explore",
+    m1:"Data Analytics",m2:"Power BI",m3:"Azure",m4:"Strategy",m5:"MBA",m6:"MSM Group",
+    m1b:"Data Analytics",m2b:"Power BI",m3b:"Azure",m4b:"Strategy",m5b:"MBA",m6b:"MSM Group",
+    about_label:"About Me",
+    about_card_role:"Lead Data Analyst · MSM Group",
+    stat1:"Years Analytics",stat2:"Team Led",stat3:"MBA GPA",
+    about_bio_large:'"I turn raw data into clarity — and clarity into growth."',
+    about_bio:"I started my career as a software engineer at OATI in Minneapolis, USA, then shifted into data analytics at MSM Group in Ulaanbaatar. Now, as Lead Data Analyst, I design data infrastructure, build Power BI ecosystems, and help leadership make faster, smarter decisions. I'm pursuing an MBA to transition from technologist to strategic business leader.",
+    exp_label:"Experience", exp_title:"WORK HISTORY",
+    exp1_role:"LEAD DATA ANALYST",
+    exp1_desc:"Architecting enterprise data infrastructure on Azure Data Factory. Leading the development team with strategic direction. Delivering Power BI analytics for finance & sales. Cultivating a data-driven culture through governance and quality frameworks.",
+    exp2_role:"DATA ANALYST",
+    exp2_desc:"Developed ETL pipelines from multiple sources, owning reliability end-to-end. Designed interactive Power BI dashboards for daily business unit operations. Built the analytical foundation for data-driven decision-making.",
+    exp3_role:"SOFTWARE ENGINEER",
+    exp3_desc:"Built high-load backend systems in Java / Spring Boot / C#. Deployed RESTful APIs and CI/CD pipelines. Optimized MongoDB & PostgreSQL. Delivered quality Agile code with full unit and E2E test coverage.",
+    exp4_role:"SERVICE MANAGER",
+    exp4_desc:"Rose from frontline staff to managing a 150+ person team. Optimized task allocation, resolved escalations swiftly, and ran cross-training programs that boosted team flexibility and total productivity.",
+    skills_label:"Capabilities", skills_title:"WHAT I DO",
+    sk1_name:"POWER BI & DAX",sk1_desc:"Enterprise dashboards, data modeling, calculated columns, measures, and report optimization across Business Central & Azure sources.",
+    sk2_name:"AZURE PLATFORM",sk2_desc:"Azure Data Factory pipelines, Synapse Analytics, Fabric integration, and enterprise-scale cloud data architecture design.",
+    sk3_name:"SQL & ETL",sk3_desc:"Multi-source ETL pipeline engineering, query optimization on MS SQL Server & PostgreSQL, data quality and governance.",
+    sk4_name:"PYTHON",sk4_desc:"Data processing, automation scripting, and analytical workflows for business intelligence and reporting pipelines.",
+    sk5_name:"SOFTWARE ENG.",sk5_desc:"Java, Spring Boot, C# backend systems; RESTful API design; CI/CD pipelines; MongoDB & PostgreSQL optimization.",
+    sk6_name:"STRATEGY & MBA",sk6_desc:"Business strategy, planning, and leadership. Currently pursuing MBA (GPA 3.61) to bridge data expertise with executive decision-making.",
+    edu_label:"Education", edu_title:"LEARNING PATH",
+    edu1_badge:"MBA · In Progress", edu1_school:"FINANCIAL UNIVERSITY", edu1_field:"Business Administration · Ulaanbaatar, Mongolia",
+    edu2_badge:"B.S. · Graduated", edu2_field:"Information Technology · Minor in Mathematics · USA",
+    award_label:"Recognition · 2024", award_big:"EMPLOYEE\nOF THE YEAR", award_org:"MSM Group ХХК — Ulaanbaatar, Mongolia",
+    contact_label:"Let's Talk", contact_big:"GET IN\nTOUCH",
+    contact_note:"Open to strategic roles in finance, conglomerates, and telecom. Targeting Strategy Manager and GM-track positions at Mongolia's leading organizations.",
+    contact_btn:"Send a Message",
+    c_phone:"Phone", c_email:"Email", c_location:"Location", c_location_val:"Khan-Uul, Ulaanbaatar, Mongolia",
+    c_target:"Target Roles", c_target_val:"Strategy Manager · Commercial Director · GM",
+  },
+  mn: {
+    nav_logo:"ӨӨДӨС", nav_about:"Намтар", nav_exp:"Туршлага", nav_skills:"Ур чадвар", nav_contact:"Холбоо барих",
+    hero_tag:"Ахлах Өгөгдлийн Шинжээч · MBA оюутан",
+    hero_h1_accent:"& Стратегич",
+    hero_sub:"Түүхий өгөгдлийг шийдвэр болгож — шийдвэрийг бизнесийн өсөлт болгодог.",
+    cta_work:"Ажлуудыг үзэх", cta_contact:"Холбоо барих",
+    scroll_hint:"Доош гүйлгэх",
+    m1:"Өгөгдлийн шинжилгээ",m2:"Power BI",m3:"Azure",m4:"Стратеги",m5:"MBA",m6:"МСМ Групп",
+    m1b:"Өгөгдлийн шинжилгээ",m2b:"Power BI",m3b:"Azure",m4b:"Стратеги",m5b:"MBA",m6b:"МСМ Групп",
+    about_label:"Миний тухай",
+    about_card_role:"Ахлах Өгөгдлийн Шинжээч · МСМ Групп",
+    stat1:"Жил аналитик",stat2:"Удирдсан баг",stat3:"MBA ГПА",
+    about_bio_large:'"Өгөгдлийг тодорхой болгодог, тодорхой байдлыг өсөлт болгодог."',
+    about_bio:"АНУ-ын Миннеаполис дахь OATI компанид програм хангамжийн инженерээр ажиллан гараагаа эхэлж, дараа нь Улаанбаатар дахь МСМ Групп-д өгөгдлийн шинжилгээ рүү шилжсэн. Одоо Ахлах Өгөгдлийн Шинжээч хэмжээнд өгөгдлийн дэд бүтцийг зохион бүтээж, Power BI экосистем бүтээн, удирдлагад хурдан, ухаалаг шийдвэр гаргахад дэмжлэг үзүүлж байна. MBA-р технологийн мэргэжилтнээс стратегийн бизнесийн удирдагч болохоор зорьж байна.",
+    exp_label:"Туршлага", exp_title:"АЖЛЫН ТҮҮХ",
+    exp1_role:"АХЛАХ ӨГӨГДЛИЙН ШИНЖЭЭЧ",
+    exp1_desc:"Azure Data Factory ашиглан байгууллагын өгөгдлийн дэд бүтцийн архитектурыг зохион бүтээж байна. Хөгжүүлэлтийн багийг стратегийн удирдлагаар хангаж, санхүү, борлуулалтын хэлтсүүдэд Power BI аналитик хүргэж байна.",
+    exp2_role:"ӨГӨГДЛИЙН ШИНЖЭЭЧ",
+    exp2_desc:"Олон эх сурвалжаас ETL pipeline хөгжүүлж, техникийн найдвартай байдлыг хариуцан ажилласан. Бизнесийн нэгжүүдийн үйл ажиллагааг дэмжих интерактив Power BI хянах самбар зохион бүтээсэн.",
+    exp3_role:"ПРОГРАМ ХӨГЖҮҮЛЭГЧ",
+    exp3_desc:"Java, Spring Boot, C# технологид суурилсан өндөр ачаалалтай backend систем бүтээсэн. RESTful API болон CI/CD pipeline нэвтрүүлж, MongoDB болон PostgreSQL-ийг оновчилсон.",
+    exp4_role:"ҮЙЛЧИЛГЭЭНИЙ МЕНЕЖЕР",
+    exp4_desc:"Туслах ажилтнаас 150 гаруй хүний бүрэлдэхүүнтэй баг удирдах түвшинд дэвшсэн. Ажлын оновчтой хуваарилалт хийж, олон ур чадварт сургалт явуулж бүтээмжийг нэмэгдүүлсэн.",
+    skills_label:"Ур чадвар", skills_title:"ХИЙДЭГ ЗҮЙЛС",
+    sk1_name:"POWER BI & DAX",sk1_desc:"Байгууллагын түвшний хянах самбар, өгөгдлийн загварчлал, тооцоолол, тайлангийн оновчлол.",
+    sk2_name:"AZURE ПЛАТФОРМ",sk2_desc:"Azure Data Factory pipeline, Synapse Analytics, Fabric интеграц, үүлэн өгөгдлийн архитектур.",
+    sk3_name:"SQL & ETL",sk3_desc:"Олон эх сурвалжтай ETL pipeline, MS SQL Server & PostgreSQL асуулгын оновчлол, өгөгдлийн засаглал.",
+    sk4_name:"PYTHON",sk4_desc:"Өгөгдөл боловсруулах, автоматжуулалт, бизнесийн тагнуулын аналитик workflow.",
+    sk5_name:"ПРОГРАМ ХӨГ.",sk5_desc:"Java, Spring Boot, C# backend систем; REST API; CI/CD pipeline; MongoDB & PostgreSQL оновчлол.",
+    sk6_name:"СТРАТЕГИ & MBA",sk6_desc:"Бизнесийн стратеги, төлөвлөлт, манлайлал. MBA (ГПА 3.61) — өгөгдлийн мэдлэгийг гүйцэтгэлийн шийдвэр гаргалттай нэгтгэх.",
+    edu_label:"Боловсрол", edu_title:"СУРАЛЦСАН ЗАМ",
+    edu1_badge:"MBA · Суралцаж байна", edu1_school:"САНХҮҮ ЭДИЙН ЗАСГИЙН ИХ СУРГУУЛЬ", edu1_field:"Бизнесийн удирдлага · Улаанбаатар, Монгол",
+    edu2_badge:"Бакалавр · Төгссөн", edu2_field:"Мэдээллийн технологи · Математикийн дагалдах · АНУ",
+    award_label:"Шагнал · 2024", award_big:"ОНЫ ШИЛДЭГ\nАЖИЛТАН", award_org:"МСМ Групп ХХК — Улаанбаатар, Монгол",
+    contact_label:"Холбоо барих", contact_big:"БИДЭНТЭЙ\nХОЛБОО БАР",
+    contact_note:"Санхүү, конгломерат, телеком салбарын стратегийн албан тушаалд нээлттэй. Монголын тэргүүлэх байгууллагуудад Стратегийн менежер, ГМ замыг зорьж байна.",
+    contact_btn:"Мессеж илгээх",
+    c_phone:"Утас", c_email:"И-мэйл", c_location:"Байршил", c_location_val:"Хан-Уул дүүрэг, Улаанбаатар",
+    c_target:"Зорьсон албан тушаал", c_target_val:"Стратегийн менежер · Арилжааны захирал · ГМ",
+  }
+};
 
-  var EMAIL_AKHLAKH = "azaa.0623@gmail.com";
-  var EMAIL_DUND    = "saranbilegsaki@gmail.com";
+function setLang(lang) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang.toUpperCase()));
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const v = T[lang][el.dataset.i18n];
+    if (v !== undefined) el.textContent = v;
+  });
+}
 
-  // ── И-мэйл мэдэгдэл — Google Apps Script ──
-  var NOTIFY_URL = "https://script.google.com/macros/s/AKfycbyZFnDMeaqzRSACfJ_l6mOTe0Dh2SVqGS8y0KxYJkSYgXvIf06Cyl-0e6i1EV0qhso5/exec";
+// ═══════════════════════
+// CURSOR
+// ═══════════════════════
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
 
-  function sendNotificationEmail(payload, code) {
-    var msg = "";
-    msg += "Шинэ дээрэлхэлтийн мэдэгдэл ирлээ.\r\n";
-    msg += "================================\r\n";
-    msg += "Tracking код    : " + code + "\r\n";
-    msg += "Анги түвшин     : " + payload.schoolLevel + "\r\n";
-    msg += "Анги            : " + payload.angi + "\r\n";
-    msg += "Бүлэг           : " + payload.buleg + "\r\n";
-    msg += "Мэдэгдэгчийн нэр: " + (payload.ner || "Нууцлагдсан") + "\r\n";
-    msg += "Мэдэгдэгч       : " + (payload.medegedech || "-") + "\r\n";
-    msg += "Дээрэлхэлтийн төрөл: " + (payload.torlud || "-") + "\r\n";
-    msg += "Давтамж         : " + (payload.davtamj || "-") + "\r\n";
-    msg += "Болсон огноо    : " + (payload.ognoo || "-") + "\r\n";
-    msg += "Болсон газар    : " + (payload.gazar || "-") + "\r\n";
-    msg += "Гэрч байсан     : " + (payload.gerech || "-") + "\r\n";
-    msg += "================================\r\n";
-    msg += "Тайлбар:\r\n" + (payload.tailbar || "-") + "\r\n";
-    msg += "================================\r\n";
-    msg += "Дээрэлхэгчийн нэр  : " + (payload.bully_ner || "Мэдэгдээгүй") + "\r\n";
-    msg += "Дээрэлхэгчийн анги : " + (payload.bully_angi || "-") + "\r\n";
-    msg += "Дээрэлхэгчийн хүйс : " + (payload.bully_huiis || "-") + "\r\n";
-    msg += "Дээрэлхэгчийн тодорхойлолт:\r\n" + (payload.bully_todorh || "-") + "\r\n";
-    msg += "================================\r\n";
-    msg += "Нотлох баримт   : " + (payload.notloh || "-") + "\r\n";
-    msg += "Өмнө мэдэгдсэн  : " + (payload.omno_medegsed || "-") + "\r\n";
-    msg += "Нэмэлт тайлбар  :\r\n" + (payload.nemeltel || "-") + "\r\n";
-    msg += "================================\r\n";
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+});
 
-    fetch(NOTIFY_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        code:    code,
-        level:   payload.schoolLevel,
-        message: msg,
-        subject: "[Дээрэлхэлт] Шинэ мэдэгдэл #" + code + " — " + payload.schoolLevel
-      }),
-      headers: { "Content-Type": "text/plain;charset=utf-8" }
-    }).catch(function(err) { console.warn("Email error:", err); });
+function animRing() {
+  rx += (mx - rx) * 0.1;
+  ry += (my - ry) * 0.1;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animRing);
+}
+animRing();
+
+document.querySelectorAll('a, button, .pill, .exp-item, .skill-card').forEach(el => {
+  el.addEventListener('mouseenter', () => { cur.style.width = '28px'; cur.style.height = '28px'; ring.style.width = '60px'; ring.style.height = '60px'; ring.style.opacity = '0.3'; });
+  el.addEventListener('mouseleave', () => { cur.style.width = '14px'; cur.style.height = '14px'; ring.style.width = '40px'; ring.style.height = '40px'; ring.style.opacity = '0.5'; });
+});
+
+// ═══════════════════════
+// EYE FOLLOW MOUSE
+// ═══════════════════════
+const svgEl = document.getElementById('hero-svg');
+const pL = document.getElementById('pupil-left');
+const pR = document.getElementById('pupil-right');
+
+document.addEventListener('mousemove', e => {
+  if (!svgEl) return;
+  const rect = svgEl.getBoundingClientRect();
+  const svgCx = rect.left + rect.width / 2;
+  const svgCy = rect.top + rect.height / 2;
+
+  function movePupil(pupil, baseX, baseY) {
+    const dx = e.clientX - (rect.left + baseX * rect.width / 500);
+    const dy = e.clientY - (rect.top + baseY * rect.height / 560);
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const maxDist = 4;
+    const nx = dist > 0 ? (dx / dist) * Math.min(dist * 0.03, maxDist) : 0;
+    const ny = dist > 0 ? (dy / dist) * Math.min(dist * 0.03, maxDist) : 0;
+    pupil.setAttribute('cx', baseX + nx);
+    pupil.setAttribute('cy', baseY + ny);
   }
 
+  movePupil(pL, 234, 209);
+  movePupil(pR, 270, 209);
+});
 
-  function onLevelChange() {
-    var level = getRadio("schoolLevel");
-    var angiSel = document.getElementById("f_angi");
-    var row = document.getElementById("angi-buleg-row");
-    row.style.display = "grid";
-    angiSel.innerHTML = "<option value=\"\">" + "Анги сонгох" + "</option>";
-    var opts = level === "akhlakh"
-      ? ["10-р анги","11-р анги","12-р анги"]
-      : ["6-р анги","7-р анги","8-р анги","9-р анги"];
-    opts.forEach(function(o) {
-      var op = document.createElement("option");
-      op.text = o; op.value = o;
-      angiSel.appendChild(op);
-    });
-    angiSel.selectedIndex = 0;
-  }
-  function getRadio(name) {
-    var el = document.querySelector('input[name="' + name + '"]:checked');
-    return el ? el.value : "";
-  }
+// ═══════════════════════
+// SCROLL REVEAL
+// ═══════════════════════
+const reveals = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      e.target.style.transitionDelay = (i % 3) * 0.1 + 's';
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
 
-  function getChecks(name) {
-    var els = document.querySelectorAll('input[name="' + name + '"]:checked');
-    if (!els.length) return "Хоосон";
-    var r = [];
-    for (var i = 0; i < els.length; i++) r.push(els[i].value);
-    return r.join(", ");
-  }
+reveals.forEach(el => io.observe(el));
 
-  function vSelect(id) {
-    var el = document.getElementById(id);
-    return el ? el.selectedIndex : 0;
-  }
+// ═══════════════════════
+// HERO SVG FLOAT ANIMATION
+// ═══════════════════════
+const heroSvg = document.getElementById('hero-svg');
+let t = 0;
+function floatSvg() {
+  t += 0.015;
+  if (heroSvg) heroSvg.style.transform = `translateY(${Math.sin(t) * 8}px)`;
+  requestAnimationFrame(floatSvg);
+}
+floatSvg();
 
-  function selText(id) {
-    var el = document.getElementById(id);
-    return (el && el.selectedIndex > 0) ? el.options[el.selectedIndex].text : "Хоосон";
-  }
-
-  function vText(id) {
-    var el = document.getElementById(id);
-    return el ? (el.value.trim() || "Хоосон") : "Хоосон";
-  }
-
-  function buildMsg() {
-    var lines = [];
-    lines.push("=== ДЭЭРЭЛХЭЛТИЙН МЭДЭГДЭЛ ===");
-    lines.push("");
-    lines.push("[1. МЭДЭГДЭГЧИЙН МЭДЭЭЛЭЛ]");
-    lines.push("Нэр, овог       : " + vText("f_ner"));
-    lines.push("Хүйс            : " + (getRadio("gender") || "Хоосон"));
-    lines.push("Ангийн түвшин   : " + (getRadio("schoolLevel") === "akhlakh" ? "Ахлах анги" : "Дунд анги"));
-    lines.push("Анги            : " + selText("f_angi"));
-    lines.push("Бүлэг           : " + selText("f_buleg"));
-    lines.push("Мэдэгдэгч       : " + (getRadio("reporter") || "Хоосон"));
-    lines.push("");
-    lines.push("[2. ДЭЭРЭЛХЭЛТИЙН ТӨРӨЛ]");
-    lines.push("Төрлүүд         : " + getChecks("type"));
-    lines.push("Давтамж         : " + (getRadio("frequency") || "Хоосон"));
-    lines.push("");
-    lines.push("[3. БОЛСОН НӨХЦӨЛ]");
-    lines.push("Огноо           : " + vText("f_ognoo"));
-    lines.push("Газар           : " + selText("f_gazar"));
-    lines.push("Гэрч байсан     : " + (getRadio("witness") || "Хоосон"));
-    lines.push("");
-    lines.push("Дэлгэрэнгүй тайлбар:");
-    lines.push(vText("f_tailbar"));
-    lines.push("");
-    lines.push("[4. ДЭЭРЭЛХЭГЧИЙН МЭДЭЭЛЭЛ]");
-    lines.push("Нэр             : " + vText("f_bully_ner"));
-    lines.push("Анги, бүлэг     : " + vText("f_bully_angi"));
-    lines.push("Хүйс            : " + (getRadio("bullyGender") || "Хоосон"));
-    lines.push("");
-    lines.push("Нэмэлт тодорхойлолт:");
-    lines.push(vText("f_bully_todorh"));
-    lines.push("");
-    lines.push("[5. НЭМЭЛТ МЭДЭЭЛЭЛ]");
-    lines.push("Өмнө мэдэгдсэн  : " + (getRadio("prevReport") || "Хоосон"));
-    lines.push("Нотлох баримт   : " + getChecks("evidence"));
-    lines.push("Хэрэгтэй тусламж: " + getChecks("help"));
-    lines.push("");
-    lines.push("Нэмэлт тайлбар:");
-    lines.push(vText("f_nemeltel"));
-    lines.push("");
-    lines.push("================================");
-    return lines.join("\n");
-  }
-
-  function validate() {
-    if (vText("f_ner") === "Хоосон") { alert("Нэр, овогоо оруулна уу!"); return false; }
-    if (!getRadio("schoolLevel")) { alert("Ангийн түвшинг сонгоно уу!"); return false; }
-    if (vSelect("f_angi") === 0) { alert("Анги сонгоно уу!"); return false; }
-    if (vSelect("f_buleg") === 0) { alert("Бүлэг сонгоно уу!"); return false; }
-    if (!getRadio("reporter")) { alert("Мэдэгдэгчийг сонгоно уу!"); return false; }
-    if (!getRadio("frequency")) { alert("Давтамж сонгоно уу!"); return false; }
-    if (vSelect("f_gazar") === 0) { alert("Болсон газар сонгоно уу!"); return false; }
-    if (vText("f_tailbar") === "Хоосон") { alert("Дэлгэрэнгүй тайлбар бичнэ үү!"); return false; }
-    if (vText("f_bully_todorh") === "Хоосон") { alert("Дээрэлхэгчийн нэмэлт тодорхойлолт бичнэ үү!"); return false; }
-    return true;
-  }
-
-  function handleSubmit() {
-    if (!validate()) return;
-    var btn = document.querySelector(".submit-btn");
-    btn.innerHTML = "Илгээж байна...";
-    btn.disabled = true;
-
-    var clientCode = Math.floor(100000 + Math.random() * 900000).toString();
-    var level = getRadio("schoolLevel") === "akhlakh" ? "Ахлах анги" : "Дунд анги";
-    var payload = {
-      code:          clientCode,
-      date:          new Date().toISOString(),
-      angi:          selText("f_angi"),
-      buleg:         selText("f_buleg"),
-      ner:           vText("f_ner"),
-      huiis:         getRadio("gender") || "Хоосон",
-      medegedech:    getRadio("reporter"),
-      torlud:        getChecks("type"),
-      davtamj:       getRadio("frequency"),
-      ognoo:         vText("f_ognoo"),
-      gazar:         selText("f_gazar"),
-      gerech:        getRadio("witness"),
-      tailbar:       vText("f_tailbar"),
-      bully_ner:     vText("f_bully_ner"),
-      bully_angi:    vText("f_bully_angi"),
-      bully_huiis:   getRadio("bullyGender"),
-      bully_todorh:  vText("f_bully_todorh"),
-      schoolLevel:   level,
-      omno_medegsed: getRadio("prevReport"),
-      notloh:        getChecks("evidence"),
-      nemeltel:      vText("f_nemeltel"),
-      status:        "Хянагдаж байна",
-      createdAt:     firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    db.collection("reports").doc(clientCode).set(payload)
-      .then(function() {
-        sendNotificationEmail(payload, clientCode);
-        window.location.href = "success.html?code=" + clientCode;
-      })
-      .catch(function(err) {
-        alert("Алдаа гарлаа: " + err.message);
-        btn.innerHTML = "✉️ Мэдэгдэл илгээх";
-        btn.disabled = false;
-      });
-  }
-
-  function resetForm() {
-    document.querySelectorAll("input[type=text], textarea").forEach(function(el) { el.value = ""; });
-    document.querySelectorAll("input[type=radio], input[type=checkbox]").forEach(function(el) { el.checked = false; });
-    document.querySelectorAll("select").forEach(function(el) { el.selectedIndex = 0; });
-    var og = document.getElementById("f_ognoo"); if (og) og.value = "";
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+// INIT
+setLang('en');
 </script>
-
-</body>
-
 </body>
 </html>
